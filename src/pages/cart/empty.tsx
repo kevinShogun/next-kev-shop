@@ -1,20 +1,21 @@
 import { NextPage } from "next";
+import NextLink from "next/link";
 import Lottie from "lottie-react";
-import { Box, Typography } from "@mui/material";
 import { ShopLayout } from "@/components/layouts";
-import animation404 from "../assets/preview.json";
+import { Box, Link, Typography } from "@mui/material";
+import cart from "../../assets/15349-empty-shopping-cart.json";
 
-const Custom404: NextPage = () => {
+const EmptyPage: NextPage = () => {
 	return (
 		<ShopLayout
-			title="Page not found"
-			pageDescription="No hay nada que mostrar"
+			title="Shopping Cart Empty"
+			pageDescription="No hay articulos en el carrito de compras"
 		>
 			<Box
 				display="flex"
 				justifyContent="center"
 				alignItems="center"
-				height='70vh'
+				height="70vh"
 				flexDirection="column"
 			>
 				<Box
@@ -23,28 +24,23 @@ const Custom404: NextPage = () => {
 					alignItems="center"
 					component="div"
 					sx={{
-						marginTop: 30,
+                       marginTop: 20,
 						flexDirection: {
 							xs: "column",
 							sm: "row",
 						},
 					}}
 				>
-					<Typography
-						variant="h1"
-						component="h1"
-						fontSize={50}
-						fontWeight={200}
-					>
-						404 |
-					</Typography>
-					<Typography marginLeft={2}>
-						No encontramos ninguna pagína aquí
-					</Typography>
+					<Typography marginRight={2} typography='h6'>Su carrito está vació</Typography>
+					<NextLink href="/" passHref legacyBehavior>
+						<Link typography="h5" color="secondary">
+							Regresar
+						</Link>
+					</NextLink>
 				</Box>
 				<Box display="flex" justifyContent="center" alignItems="center">
 					<Lottie
-						animationData={animation404}
+						animationData={cart}
 						style={{ height: "300px", width: "300px" }}
 					/>
 				</Box>
@@ -53,4 +49,4 @@ const Custom404: NextPage = () => {
 	);
 };
 
-export default Custom404;
+export default EmptyPage;
