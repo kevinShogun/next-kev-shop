@@ -1,15 +1,14 @@
-import {
-	Card,
-	CardActionArea,
-	CardMedia,
-	Grid,
-	Typography,
-} from "@mui/material";
+import { Typography } from "@mui/material";
+import { useProducts } from "@/hooks";
 import { ShopLayout } from "@/components/layouts";
-import { initialData } from "@/database/products";
 import { ProductsList } from "@/components/products";
+import { FullScreenLoading } from "@/components/app";
 
 export default function Home() {
+
+
+	const { isLoading, products } = useProducts('/products');
+
 	return (
 		<ShopLayout
 			title="Kev Shop - Home"
@@ -22,13 +21,18 @@ export default function Home() {
 			<Typography
 				variant="h2"
 				sx={{
-					mb: 1,
+					mb: 5,
 				}}
 			>
 				Todos los productos
 			</Typography>
+			{/* <FullScreenLoading /> */}
 
-			<ProductsList products={initialData.products as any} />
+			{
+				isLoading
+					? <FullScreenLoading />
+					: <ProductsList products={products} />
+			}
 		</ShopLayout>
 	);
 }
