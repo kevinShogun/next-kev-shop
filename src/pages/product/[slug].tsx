@@ -1,10 +1,13 @@
+import { useContext, useState } from "react";
 import { GetServerSideProps, GetStaticPaths, GetStaticProps, NextPage } from "next";
-import { Box, Button, Grid, Typography } from "@mui/material";
+import { Alert, Box, Button, Chip, Grid, Snackbar, Stack, Typography } from "@mui/material";
 import { dbProducts } from "@/database";
-import { IProduct } from "@/interfaces";
+import { ICartProduct, IProduct, ISize } from "@/interfaces";
 import { ShopLayout } from "@/components/layouts";
 import { ItemCounter } from "@/components/app";
 import { ProductSizeSelector, ProductSlideshow } from "@/components/products";
+import { useRouter } from "next/router";
+import { CartContext } from "@/context";
 
 
 interface Props {
@@ -13,11 +16,88 @@ interface Props {
 
 const ProductPage: NextPage<Props> = ({ product }) => {
 
+	const router = useRouter();
+
+	const {addProductToCart} = useContext(CartContext)
+
+	const [tempCartProduct, setTempCartProduct] = useState<ICartProduct>({
+		_id: product._id,
+		images: product.images[1],
+		price: product.price,
+		size: undefined,
+		slug: product.slug,
+		title: product.title,
+		gender: product.gender,
+		quantity: 1,
+	});
+
+	const [alertError, setAlertError] = useState({
+		show: false,
+		msg: ''
+	})
 	// const router = useRouter();
 	// const {products: product, isLoading} = useProducts(`/products/${router.query.slug}`);
 
+
+    const updateQuantity = (quantity: number) => {
+		setTempCartProduct( (currentProduct) => ({
+			...currentProduct,
+			quantity
+		}))
+    }
+
+	const onSelectedSize = (size: ISize) => {
+		setTempCartProduct({
+			...tempCartProduct,
+			size
+		});
+	}
+
+	const onAddProduct = async () => {
+		if (!tempCartProduct.size) {
+			setAlertError({
+				show: true,
+				msg: 'Debe seleccionar una talla para agregar el producto al carrito de compras'
+			})
+			return
+		};
+
+		console.log({
+			tempCartProduct
+		});
+
+		await addProductToCart(tempCartProduct);
+
+		router.push("/cart");
+		
+	}
+
 	return (
 		<ShopLayout title={product.title} pageDescription={product.description}>
+			
+			<Snackbar
+				open={alertError.show} autoHideDuration={4000} onClose={() => {
+					setAlertError({
+						...alertError,
+						show: false
+					})
+				}}
+				anchorOrigin={{
+					horizontal: 'right',
+					vertical: 'top'
+				}}
+			>
+				<Alert
+					severity="warning"
+					onClose={() => {
+						setAlertError({
+							...alertError,
+							show: false
+						})
+					}}
+				>{alertError.msg}</Alert>
+			</Snackbar>
+			
 			<Grid container spacing={3}>
 				<Grid item xs={12} sm={7}>
 					<ProductSlideshow images={product.images} />
@@ -40,17 +120,39 @@ const ProductPage: NextPage<Props> = ({ product }) => {
 							}}
 						>
 							<Typography variant="subtitle2">Cantidad</Typography>
-							<ItemCounter />
+
+							<ItemCounter 
+								currentValue={tempCartProduct.quantity}
+								updateQuantity={updateQuantity}
+								maxValue={product.inStock}
+
+							/>
+
 							<ProductSizeSelector
-								// selectedSize={product.sizes[0]}
+								selectedSize={tempCartProduct.size}
 								sizes={product.sizes}
+								onSelectedSize={onSelectedSize}
 							/>
 						</Box>
 
-						{/* Agregar al carrito */}
-						<Button color="secondary" className="circular-btn">
-							Agregar al carrito
-						</Button>
+						{
+							/* Agregar al carrito */
+							product.inStock > 0 ?
+							<Button color="secondary" className="circular-btn"
+								onClick={onAddProduct}
+							>
+								{
+									tempCartProduct.size
+									? 'Agregar al carrito'
+									: 'Seleccione un talla'
+								}
+							</Button>
+							: <Chip
+								label='No hay unidades disponibles'
+								color="error"
+								variant="outlined"
+							/>
+						}
 
 						{/* <Chip label="No hay disponibles" color="error" variant="outlined" /> */}
 
