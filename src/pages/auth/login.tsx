@@ -1,57 +1,121 @@
 /* eslint-disable @next/next/no-img-element */
+import { useContext, useState } from 'react'
 import { NextPage } from 'next'
 import NextLink from 'next/link'
-import { Box, Button, Grid, Link, TextField, Typography } from '@mui/material'
+import { useRouter } from 'next/router'
+import { useForm } from 'react-hook-form'
+import { Box, Button, Chip, Grid, Link, TextField, Typography } from '@mui/material'
+import { ErrorOutlineRounded } from '@mui/icons-material'
+import { validations } from '@/utils'
 import { AuthLayout } from '@/components/layouts'
+import { AuthContext } from '@/context'
 
+
+type FormData = {
+    email: string
+    password: string
+}
 
 const Login: NextPage = () => {
+
+    const [isError, setIsError] = useState(false);
+    const { loginUser } = useContext(AuthContext);
+    const router = useRouter();
+    const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+
+
+    const onLoginUser = async ({ email, password }: FormData) => {
+
+        const isValidLogin = await loginUser(email, password)
+
+        if (!isValidLogin) {
+            setIsError(true);
+            setTimeout(() => { setIsError(false); }, 5000);
+
+            return;
+        }
+        router.replace('/');
+    }
+
     return (
-        <AuthLayout
-            title='Ingresar'
-        >
-            <Box
-                sx={{
-                    width: '100%',
-                }}
-            >
-                <Grid container
-                    spacing={3}
-                >
+        <AuthLayout title='Ingresar'>
+            <Box sx={{ width: '100%', }}>
+                <Grid container spacing={3}>
                     <Grid item xs={12} sm={6} gap={3}
                         sx={{
                             marginTop: 'auto',
                             marginBottom: 'auto',
                         }}
                     >
-                        <Box
-                            display='flex'
-                            flexDirection='column'
-                            gap={2}
-                            sx={{
-                                padding: '2rem',
-                            }}
+                        <form
+                            onSubmit={handleSubmit(onLoginUser)}
+                            noValidate
                         >
-                            <Typography variant='h1' component='h1'>Iniciar Sesión</Typography>
-
-                            <TextField label='Correo' variant='filled' fullWidth />
-
-                            <TextField label='Contraseña' type='password' variant='filled' fullWidth />
-                            <Button
-                                color='secondary'
-                                variant='contained'
-                                fullWidth
-                                className='circular-btn'
-                                size='large'
+                            <Box
+                                display='flex'
+                                flexDirection='column'
+                                gap={2}
+                                sx={{
+                                    padding: '2rem',
+                                }}
                             >
+                                <Typography variant='h1' component='h1'>Iniciar Sesión</Typography>
 
-                                Ingresar
-                            </Button>
-                            <NextLink href={'/auth/register'} passHref legacyBehavior>
-                                <Link underline='always' color='secondary'>¿No tienes cuenta?</Link>
-                            </NextLink>
+                                <Chip
+                                    label='Usuario y/o contraseña no son válidos'
+                                    color='error'
+                                    icon={<ErrorOutlineRounded />}
+                                    className='fadeIn'
+                                    sx={{
+                                        m: 2,
+                                        display: isError ? 'flex' : "none"
+                                    }}
+                                />
 
-                        </Box>
+                                <TextField
+                                    type='email'
+                                    label='Correo'
+                                    variant='filled'
+                                    fullWidth
+                                    {...register('email', {
+                                        required: 'Este campo es requerido',
+                                        validate: validations.isEmail
+                                    })}
+                                    error={!!errors.email}
+                                    helperText={errors.email?.message}
+                                />
+
+                                <TextField
+                                    label='Contraseña'
+                                    type='password'
+                                    variant='filled'
+                                    fullWidth
+                                    {...register('password', {
+                                        required: 'Este campo es requerido',
+                                        minLength: {
+                                            value: 6,
+                                            message: 'Mínimo 6 caracteres'
+                                        }
+                                    })}
+                                    error={!!errors.password}
+                                    helperText={errors.password?.message}
+                                />
+                                <Button
+                                    color='secondary'
+                                    variant='contained'
+                                    fullWidth
+                                    className='circular-btn'
+                                    size='large'
+                                    type='submit'
+                                >
+
+                                    Ingresar
+                                </Button>
+                                <NextLink href={'/auth/register'} passHref legacyBehavior>
+                                    <Link underline='always' color='secondary'>¿No tienes cuenta?</Link>
+                                </NextLink>
+                            </Box>
+                        </form>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <Box
@@ -61,6 +125,9 @@ const Login: NextPage = () => {
                                 width: '100%',
                                 bgcolor: '#F0EDEA',
                                 height: '100vh',
+                                '@media (max-width: 600px)': {
+                                    height: '50vh',
+                                },
                                 display: 'flex',
                                 justifyContent: 'center',
                                 alignItems: 'center',
@@ -92,9 +159,7 @@ const Login: NextPage = () => {
                         </Box>
                     </Grid>
                 </Grid>
-
             </Box>
-
         </AuthLayout>
     )
 }
