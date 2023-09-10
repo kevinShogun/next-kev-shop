@@ -3,6 +3,7 @@ import { ICartProduct } from '@/interfaces';
 
 
 export interface ContextCartProps {
+    isLoaded: boolean;
     cart: ICartProduct[];
     numberOfItems: number;
     subTotal: number;

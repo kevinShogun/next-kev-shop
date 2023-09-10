@@ -25,6 +25,7 @@
     "bcryptjs": "^2.4.3",
     "eslint": "8.39.0",
     "eslint-config-next": "13.3.2",
+    "jose": "^4.14.6",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.1",
     "lottie-react": "^2.4.0",

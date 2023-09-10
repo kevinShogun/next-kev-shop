@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { NextPage } from 'next'
 import NextLink from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -21,11 +21,17 @@ type FormData = {
 
 const RegisterPage: NextPage = () => {
 
+    const router = useRouter();
+    const {registerUser} = useContext(AuthContext);
     const [isError, setIsError] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
-    const {registerUser} = useContext(AuthContext);
-    const router = useRouter();
+    const [destination, setDestination] = useState('/');
     const { register, handleSubmit, getValues, formState: { errors } } = useForm<FormData>();
+
+    useEffect(() => {
+        setDestination(router.query.p?.toString() || '/');
+    }, [router.query.p]);
+      
 
     const onRegisterUser = async (data: FormData) => {
         const {name, email, password} = data;
@@ -41,8 +47,7 @@ const RegisterPage: NextPage = () => {
             return;
         }
 
-        router.replace('/');
-
+        router.replace(destination);
     }
 
     const validatePasswordMatch = (value: string) => {
@@ -140,7 +145,7 @@ const RegisterPage: NextPage = () => {
 
                                     Ingresar
                                 </Button>
-                                <NextLink href={'/auth/login'} passHref legacyBehavior>
+                                <NextLink href={`/auth/login?p=${destination}`} passHref legacyBehavior>
                                     <Link underline='always' color='secondary'>¿Ya tienes cuenta?</Link>
                                 </NextLink>
 

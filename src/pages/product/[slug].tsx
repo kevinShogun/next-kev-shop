@@ -61,10 +61,7 @@ const ProductPage: NextPage<Props> = ({ product }) => {
 			})
 			return
 		};
-
-		console.log({
-			tempCartProduct
-		});
+		// console.log({ tempCartProduct });
 
 		await addProductToCart(tempCartProduct);
 

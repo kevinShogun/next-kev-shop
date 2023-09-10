@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { NextPage } from 'next'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
@@ -18,11 +18,17 @@ type FormData = {
 
 const Login: NextPage = () => {
 
-    const [isError, setIsError] = useState(false);
     const { loginUser } = useContext(AuthContext);
     const router = useRouter();
+    const [isError, setIsError] = useState(false);
+    const [destination, setDestination] = useState('/');
     const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
 
+
+    useEffect(() => {
+      setDestination(router.query.p?.toString() || '/');
+    }, [router.query.p]);
+    
 
     const onLoginUser = async ({ email, password }: FormData) => {
 
@@ -33,8 +39,8 @@ const Login: NextPage = () => {
             setTimeout(() => { setIsError(false); }, 5000);
 
             return;
-        }
-        router.replace('/');
+        }        
+        router.replace(destination);
     }
 
     return (
@@ -111,7 +117,7 @@ const Login: NextPage = () => {
 
                                     Ingresar
                                 </Button>
-                                <NextLink href={'/auth/register'} passHref legacyBehavior>
+                                <NextLink href={`/auth/register?p=${destination}`} passHref legacyBehavior>
                                     <Link underline='always' color='secondary'>¿No tienes cuenta?</Link>
                                 </NextLink>
                             </Box>
