@@ -11,6 +11,10 @@ const countriesSchema = new Schema(
 	}
 );
 
+countriesSchema.index({
+	code: 'text',
+});
+
 const Country: Model<ICountries> =
 	mongoose.models.Country || model("Country", countriesSchema);
 

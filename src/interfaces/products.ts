@@ -10,7 +10,6 @@ export interface IProduct {
     title: string;
     type: IType;
     gender: 'men'|'women'|'kid'|'unisex'
-    // TODO: Agregar createdAt y updatedAt
     createdAt: string;
     updatedAt: string;
 }

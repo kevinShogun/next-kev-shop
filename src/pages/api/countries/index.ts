@@ -7,6 +7,7 @@ type Data =
 	| {
 			message: string;
 	  }
+	| ICountries
 	| ICountries[];
 
 export default function handler(
@@ -31,6 +32,26 @@ const getCountries = async (
 ) => {
 	await database.connect();
 
+
+	const { code } = req.query;
+
+	if(code){
+		try {
+			const country = await Country.findOne({code}).lean();
+			if(country) return res.status(200).json(country);
+			else return res.status(404).json({
+				message:
+					"No se encontraron registros de países, favor verifique el parametro enviado",
+			});
+		} catch (error) {
+			console.log(error);
+			return res.status(404).json({
+				message:
+					"No se encontraron registros de países, favor verifique el parametro enviado",
+			});
+		}
+	}
+	
 	const countries = await Country.find();
 
 	await database.disconnect();
@@ -77,9 +98,13 @@ const postCountry = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
 
 	try {
 		await newCountry.save({validateBeforeSave: true});
+		
+		return res.status(201).json({
+			message: 'País creado existosamente'
+		});
+
 	} catch (error) {
 		console.log(error);
-
 		return res.status(500).json({
 			message: "Error -  revisar log del servidor",
 		});
