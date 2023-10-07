@@ -1,15 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
 import { useContext, useEffect, useState } from 'react'
-import { NextPage } from 'next'
+import { GetServerSideProps, NextPage } from 'next'
 import NextLink from 'next/link'
 import { useForm } from 'react-hook-form'
-import { Box, Grid, Typography, TextField, Button, Link, Chip } from '@mui/material'
+import { Box, Grid, Typography, TextField, Button, Link, Chip, Divider } from '@mui/material'
 import { ErrorOutlineRounded } from '@mui/icons-material'
 import { AuthLayout } from '@/components/layouts'
 import { validations } from '@/utils'
-import { tesloApi } from '@/api'
 import { AuthContext } from '@/context'
 import { useRouter } from 'next/router'
+import { getSession, signIn } from 'next-auth/react'
 
 
 type FormData = {
@@ -28,9 +28,9 @@ const RegisterPage: NextPage = () => {
     const [destination, setDestination] = useState('/');
     const { register, handleSubmit, getValues, formState: { errors } } = useForm<FormData>();
 
-    useEffect(() => {
-        setDestination(router.query.p?.toString() || '/');
-    }, [router.query.p]);
+    // useEffect(() => {
+    //     setDestination(router.query.p?.toString() || '/');
+    // }, [router.query.p]);
       
 
     const onRegisterUser = async (data: FormData) => {
@@ -47,7 +47,9 @@ const RegisterPage: NextPage = () => {
             return;
         }
 
-        router.replace(destination);
+        await signIn('credentials', { email, password });
+
+        // router.replace(destination);
     }
 
     const validatePasswordMatch = (value: string) => {
@@ -151,6 +153,10 @@ const RegisterPage: NextPage = () => {
 
                             </Box>
                         </form>
+                        <Box>
+                            <Divider sx={{width: "100%", mb: 2, ml: 2}}/>
+
+                        </Box>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <Box
@@ -200,5 +206,28 @@ const RegisterPage: NextPage = () => {
         </AuthLayout>
     )
 }
+
+
+export const getServerSideProps: GetServerSideProps = async ({ req, query }) => {
+
+    const session = await getSession({ req });
+    const { p = '/' } = query;
+    
+    if(session) {
+        return {
+            redirect: {
+                destination: p.toString(),
+                permanent: false
+            }
+        }
+    }
+
+    return {
+        props:{
+
+        }
+    }
+}
+
 
 export default RegisterPage

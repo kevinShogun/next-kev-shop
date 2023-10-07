@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from "react";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import Cookies from "js-cookie";
 import { useForm } from "react-hook-form";
+import Cookies from "js-cookie";
 import { Box, Button, FormControl, Grid, MenuItem, TextField, Typography } from "@mui/material";
 import { tesloApi } from "@/api";
 import { CartContext } from "@/context";
@@ -44,6 +44,11 @@ const AddressPage: NextPage = () => {
 	});
 
 	const { updateAddress } = useContext(CartContext);
+
+	// useEffect(() => {
+	// 	reset(getAdressFormCookies());
+	// }, [reset])
+	
 
 	useEffect(() => {
 		const getCountries = async () => {

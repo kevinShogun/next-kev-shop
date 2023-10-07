@@ -4,6 +4,7 @@ import FacebookProvider from "next-auth/providers/facebook";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { dbUsers } from "@/database";
+import { oAuthToDbUser } from "@/database/dbUsers";
 
 export const authOptions = {
 	// Configure one or more authentication providers
@@ -41,6 +42,10 @@ export const authOptions = {
 			clientSecret: process.env.GOOGLE_SECRET || "",
 		}),
 	],
+	pages: {
+		signIn: '/auth/login',
+		newUser: '/auth/register'
+	},
     callbacks: {
         async jwt({token, account, user}: any) {
 
@@ -49,7 +54,7 @@ export const authOptions = {
                 switch( account.type ){
 
                     case 'oauth': 
-                        // todo: crear o verificar usuario
+                        token.user = await oAuthToDbUser(user?.email || '', user?.name || '' );
                     break;
 
                     case 'credentials': 
@@ -68,7 +73,11 @@ export const authOptions = {
             
             return session;
         }
-    }
+    },
+	session: {
+		maxAge: 2592000,
+		updateAge: 86400
+	}
 };
 
 export default NextAuth(authOptions);

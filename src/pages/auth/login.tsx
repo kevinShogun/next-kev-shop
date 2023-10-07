@@ -1,14 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
 import { useContext, useEffect, useState } from 'react'
-import { NextPage } from 'next'
+import { NextPage, GetServerSideProps } from 'next'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
-import { Box, Button, Chip, Grid, Link, TextField, Typography } from '@mui/material'
+import { Box, Button, Chip, Grid, Link, TextField, Typography, Divider } from '@mui/material'
 import { ErrorOutlineRounded } from '@mui/icons-material'
 import { validations } from '@/utils'
 import { AuthLayout } from '@/components/layouts'
 import { AuthContext } from '@/context'
+import { getProviders, getSession, signIn } from 'next-auth/react'
 
 
 type FormData = {
@@ -24,23 +25,33 @@ const Login: NextPage = () => {
     const [destination, setDestination] = useState('/');
     const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
 
+    const [providers, setProviders] = useState<any>({})
+
 
     useEffect(() => {
-      setDestination(router.query.p?.toString() || '/');
-    }, [router.query.p]);
+        getProviders().then( prov => {
+          setProviders(prov)
+        })
+    }, [])
+    
+
+    // useEfect(() => {
+    //   setDestinaftion(router.query.p?.toString() || '/');
+    // }, [router.query.p]);
     
 
     const onLoginUser = async ({ email, password }: FormData) => {
 
-        const isValidLogin = await loginUser(email, password)
 
-        if (!isValidLogin) {
+        const isValidLogin = await signIn('credentials',{ email, password} );
+        console.log(isValidLogin);
+        // const isValidLogin = await loginUser(email, password)
+        if (!isValidLogin?.ok) {
             setIsError(true);
             setTimeout(() => { setIsError(false); }, 5000);
-
             return;
         }        
-        router.replace(destination);
+        // router.replace(destination);
     }
 
     return (
@@ -122,6 +133,23 @@ const Login: NextPage = () => {
                                 </NextLink>
                             </Box>
                         </form>
+                        <Box>
+                            <Divider sx={{width: "100%", mb: 2, ml: 2}}/>
+                            {
+                                providers && Object.values(providers).map(( prov: any ) => {
+                                    if(prov.id === "credentials") return (<div key={prov.id}></div>)
+                                    return (
+                                        <Button
+                                            key={prov.id} variant='outlined' fullWidth
+                                            color='primary' sx={{m: 1, }}
+                                            onClick={() => signIn(prov.id)}
+                                        >
+                                            {prov.name}
+                                        </Button>
+                                    )
+                                })
+                            }
+                        </Box>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <Box
@@ -170,4 +198,27 @@ const Login: NextPage = () => {
     )
 }
 
-export default Login
+
+
+export const getServerSideProps: GetServerSideProps = async ({ req, query }) => {
+
+    const session = await getSession({ req });
+    const { p = '/' } = query;
+    
+    if(session) {
+        return {
+            redirect: {
+                destination: p.toString(),
+                permanent: false
+            }
+        }
+    }
+
+    return {
+        props:{
+
+        }
+    }
+}
+
+export default Login;
