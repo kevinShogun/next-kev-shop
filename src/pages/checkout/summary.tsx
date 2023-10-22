@@ -10,17 +10,23 @@ import {
 	Box,
 	Button,
     Link,
+	Chip,
 } from "@mui/material";
 import { CartContext } from "@/context";
 import { CardList, OrdenSummary } from "@/components/cart";
 import { ShopLayout } from "@/components/layouts";
 import { tesloApi } from "@/api";
 import { ICountries } from "@/interfaces";
+import { NoSummary } from "@/components/summary";
+import { useRouter } from "next/router";
 
 const SummaryPage: NextPage = () => {
 
-	const { shippingAddress, numberOfItems } = useContext(CartContext);
+	const { shippingAddress, numberOfItems, createOrder } = useContext(CartContext);
 	const [countryName, setCountryName] = useState('');
+	const [isPosting, setIsPosting] = useState(false);
+	const [errorMsg, setErrorMsg] = useState('');
+	const router = useRouter();
 
 	useEffect(() => {
 		if(shippingAddress){
@@ -33,10 +39,26 @@ const SummaryPage: NextPage = () => {
 	}, [shippingAddress]);
 	
 	if(!shippingAddress){
-		return <div></div>
+		return <NoSummary/>
 	}
 
 	const {address, city, firstName, lastName, phone, zip, address2} = shippingAddress;
+
+
+	const onCreateOrder = async () => {
+
+		setIsPosting(true);
+
+		const { hasError, msg } = await createOrder(); 
+
+		if(hasError){
+			setIsPosting(false);
+			setErrorMsg(msg);
+			return;
+		}
+
+		router.replace(`/orders/${msg}`)
+	}
 	
 
 	return (
@@ -83,10 +105,26 @@ const SummaryPage: NextPage = () => {
 
 							<OrdenSummary />
 
-							<Box sx={{ mt: 3, }}>
-								<Button color="secondary" className="circular-btn" fullWidth>
+							<Box sx={{ mt: 3, }}
+								display='flex'
+								flexDirection='column'
+							>
+								<Button color="secondary" className="circular-btn" fullWidth
+									onClick={onCreateOrder}
+									disabled={isPosting}
+								>
 									Confirmar Orden
 								</Button>
+
+								<br/>
+								<Chip
+									color="error"
+									variant="outlined"
+									label={errorMsg}
+									sx={{
+										display: errorMsg ? 'flex' : 'none'
+									}}
+								/>
 							</Box>
 						</CardContent>
 					</Card>

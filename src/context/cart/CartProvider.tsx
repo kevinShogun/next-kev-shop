@@ -1,7 +1,9 @@
 import { FC, ReactNode, useEffect, useReducer, useRef } from 'react';
 import Cookie from 'js-cookie';
-import { ICartProduct } from '@/interfaces';
+import { ICartProduct, IOrder } from '@/interfaces';
 import { CartContext, cartReducer } from './';
+import { tesloApi } from '@/api';
+import axios from 'axios';
 
 interface Props {
     children: ReactNode | ReactNode[];
@@ -172,6 +174,48 @@ export const CartProvider: FC<Props> = ({ children }) => {
     }
 
 
+    const createOrder = async ():Promise<{ 
+        hasError: boolean; msg: string;
+    }> => {
+        if(!state.shippingAddress){
+            throw new Error('No hay direccion de entrega');
+        }
+        const body:IOrder = {
+            orderItems: state.cart.map( p => ({
+                ...p,
+                size: p.size!
+            })),
+            shippingAddress: state.shippingAddress,
+            numberOfItems: state.numberOfItems,
+            subTotal: state.subTotal,
+            taxRate: state.taxRate,
+            total: state.total,
+            isPaid: false
+        }
+
+        try {
+            const { data } = await tesloApi.post('/order', body);
+            dispatch({ type: '[Cart] - Order complete' });
+            return {
+                hasError: false,
+                msg: data._id!
+            }
+        } catch (error) {
+            console.log(error)
+            if(axios.isAxiosError(error)){
+                return {
+                    hasError: true,
+                    msg: error.response?.data.message
+                }
+            }
+            return {
+                hasError: true,
+                msg: 'Error no controlado, favor contactar al administrador'
+            }
+        }   
+    }
+
+
     return (
         <CartContext.Provider
             value={{
@@ -181,7 +225,8 @@ export const CartProvider: FC<Props> = ({ children }) => {
                 addProductToCart,
                 updateCartQuantity,
                 removeCartProduct,
-                updateAddress
+                updateAddress,
+                createOrder
             }}
         >
             {children}

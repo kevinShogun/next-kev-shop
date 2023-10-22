@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useLayoutEffect, useState } from 'react'
 import { GetServerSideProps, NextPage } from 'next'
 import NextLink from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -22,20 +22,25 @@ type FormData = {
 const RegisterPage: NextPage = () => {
 
     const router = useRouter();
+
     const {registerUser} = useContext(AuthContext);
     const [isError, setIsError] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [destination, setDestination] = useState('/');
     const { register, handleSubmit, getValues, formState: { errors } } = useForm<FormData>();
 
-    // useEffect(() => {
-    //     setDestination(router.query.p?.toString() || '/');
-    // }, [router.query.p]);
+    useLayoutEffect(() => {
+        const { error } = router.query;
+        if(error){
+            setIsError(true);
+            setTimeout(() => { setIsError(false); }, 5000);
+        }
+    }, [router]);
       
 
     const onRegisterUser = async (data: FormData) => {
-        const {name, email, password} = data;
-        const {hasError, message} = await registerUser(name,email,password);
+        const { name, email, password } = data;
+        const { hasError, message  } = await registerUser(name,email,password);
 
         if (hasError) {
             setIsError(true);

@@ -1,15 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { NextPage, GetServerSideProps } from 'next'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
+import { getProviders, getSession, signIn } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 import { Box, Button, Chip, Grid, Link, TextField, Typography, Divider } from '@mui/material'
 import { ErrorOutlineRounded } from '@mui/icons-material'
 import { validations } from '@/utils'
 import { AuthLayout } from '@/components/layouts'
-import { AuthContext } from '@/context'
-import { getProviders, getSession, signIn } from 'next-auth/react'
 
 
 type FormData = {
@@ -19,7 +18,7 @@ type FormData = {
 
 const Login: NextPage = () => {
 
-    const { loginUser } = useContext(AuthContext);
+    // const { loginUser } = useContext(AuthContext);
     const router = useRouter();
     const [isError, setIsError] = useState(false);
     const [destination, setDestination] = useState('/');
@@ -35,22 +34,23 @@ const Login: NextPage = () => {
     }, [])
     
 
-    // useEfect(() => {
-    //   setDestinaftion(router.query.p?.toString() || '/');
-    // }, [router.query.p]);
+    useLayoutEffect(() => {
+        const { error } = router.query;
+        if(error){
+            setIsError(true);
+            setTimeout(() => { setIsError(false); }, 5000);
+        }
+    }, [router]);
     
 
     const onLoginUser = async ({ email, password }: FormData) => {
-
-
-        const isValidLogin = await signIn('credentials',{ email, password} );
-        console.log(isValidLogin);
-        // const isValidLogin = await loginUser(email, password)
-        if (!isValidLogin?.ok) {
+        try {
+            await signIn('credentials',{ email, password} );
+        } catch (error) {
             setIsError(true);
             setTimeout(() => { setIsError(false); }, 5000);
             return;
-        }        
+        }
         // router.replace(destination);
     }
 

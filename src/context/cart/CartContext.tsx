@@ -18,6 +18,7 @@ export interface ContextCartProps {
     updateCartQuantity: (p: ICartProduct) => void;
     removeCartProduct: (p: ICartProduct) => void;
     updateAddress: (p: ShippingAddress) => void;
+    createOrder: () => Promise<{ hasError: boolean; msg: string;}>;
 }
 
 
