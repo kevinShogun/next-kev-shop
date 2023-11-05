@@ -1,21 +1,60 @@
+import { useState } from 'react';
 import { NextPage, GetServerSideProps } from 'next';
-import NextLink from 'next/link';
+import { useRouter } from 'next/router';
 import { getSession } from 'next-auth/react';
-import { Box, Card, CardContent, Chip, Divider, Grid, Link, Typography } from '@mui/material'
-import { CreditCardOffOutlined, CreditScoreOutlined } from '@mui/icons-material';
+import { PayPalButtons } from '@paypal/react-paypal-js';
+import { Box, Card, CardContent, Chip, Divider, Grid, Typography } from '@mui/material'
+import { CreditCardOffOutlined, CreditCardOutlined, CreditScoreOutlined } from '@mui/icons-material';
+import CircularProgress from '@mui/material/CircularProgress';
+import { tesloApi } from '@/api';
 import { dbOrders } from '@/database';
+import { IOrder } from '@/interfaces';
 import { ShopLayout } from '@/components/layouts'
 import { CardList, OrdenSummary } from '@/components/cart'
-import { IOrder } from '@/interfaces';
-
 
 interface Props {
     order: IOrder
 }
 
+interface OrdersResponseBody {
+    id: string;
+    status:
+    | "COMPLETED"
+    | "SAVED"
+    | "APPROVED"
+    | "VOIDED"
+    | "PAYER_ACTION_REQUIRED"
+    | "CREATED"
+}
+
+
 const OrderPage: NextPage<Props> = ({ order }) => {
 
+    const router = useRouter();
+    const [isPaying, setIsPaying] = useState(false);
+
     const { shippingAddress } = order;
+    const onOrderComplete = async (details: OrdersResponseBody) => {
+        if (details.status !== 'COMPLETED') {
+            return alert('no hay pago en Paypal');
+        }
+        setIsPaying(true);
+
+        try {
+            const { data } = await tesloApi.post(`/order/pay`, {
+                transactionId: details.id,
+                orderId: order._id
+            });
+
+            router.reload();
+
+        } catch (error) {
+            setIsPaying(false);
+            console.log(error);
+            alert('Error')
+        }
+    }
+
 
     return (
         <ShopLayout
@@ -79,21 +118,56 @@ const OrderPage: NextPage<Props> = ({ order }) => {
                             />
 
                             <Box sx={{ mt: 3 }} display='flex' flexDirection='column'>
-                                {
-                                    order.isPaid ? (
-                                        <Chip
-                                            sx={{ my: 2, p: 1 }}
-                                            label='Pendiente de pago'
-                                            variant='outlined'
-                                            color='error'
-                                            icon={<CreditCardOffOutlined />}
-                                        />
-                                    ) : (
-                                        <h1 color="secondary">
-                                            Pagar
-                                        </h1>
-                                    )
-                                }
+
+                                <Box
+                                    display='flex'
+                                    justifyContent='center'
+                                    className='fadeIn'
+                                    sx={{
+                                        display: isPaying ? 'flex' : 'none'
+                                    }}
+                                >
+                                    <CircularProgress />
+                                </Box>
+
+                                <Box
+                                    sx={{ display: isPaying ? 'none' : 'flex', flex: 1, flexDirection: 'column' }}
+                                >
+                                    {
+                                        order.isPaid ? (
+                                            <Chip
+                                                sx={{ my: 2, p: 1 }}
+                                                label='Orden pagada'
+                                                variant='outlined'
+                                                color='success'
+                                                icon={<CreditCardOutlined />}
+                                            />
+                                        ) : (
+                                            <PayPalButtons
+                                                createOrder={(data, actions) => {
+                                                    return actions.order.create({
+                                                        purchase_units: [
+                                                            {
+                                                                amount: {
+                                                                    currency_code: 'USD',
+                                                                    value: order.total.toString(),
+                                                                }
+                                                            }
+                                                        ]
+                                                    })
+                                                }}
+                                                onApprove={(data, actions) => {
+                                                    //@ts-ignore
+                                                    return actions.order.capture().then(function (details) {
+                                                        onOrderComplete(details);
+                                                        // const name = details?.payer.name?.given_name;
+                                                        // alert(`Gracias ${name}. Tu pago ha sido procesado correctamente.`);
+                                                    })
+                                                }}
+                                            />
+                                        )
+                                    }
+                                </Box>
                             </Box>
                         </CardContent>
                     </Card>
