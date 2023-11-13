@@ -29,7 +29,7 @@ const RegisterPage: NextPage = () => {
     const [destination, setDestination] = useState('/');
     const { register, handleSubmit, getValues, formState: { errors } } = useForm<FormData>();
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         const { error } = router.query;
         if(error){
             setIsError(true);

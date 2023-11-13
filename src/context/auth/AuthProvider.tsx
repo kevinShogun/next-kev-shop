@@ -113,7 +113,6 @@ export const AuthProvider: FC<Props> = ({ children }) => {
     }
 
     const logout = () => {
-        
         Cookies.remove('cart');
         Cookies.remove('firstName');
         Cookies.remove('lastName');
@@ -126,7 +125,7 @@ export const AuthProvider: FC<Props> = ({ children }) => {
         localStorage.clear();
         sessionStorage.clear();
         signOut();
-        
+        router.push("/")
     }
 
     return (

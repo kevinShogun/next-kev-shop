@@ -34,7 +34,7 @@ const Login: NextPage = () => {
     }, [])
     
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         const { error } = router.query;
         if(error){
             setIsError(true);
