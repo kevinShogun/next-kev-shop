@@ -14,6 +14,7 @@ export const getProductBySlug = async (
 	if (!product) {
 		return null;
 	}
+	// todo: procesamiento de imagenes al server
 
 	return JSON.parse(JSON.stringify(product));
 };

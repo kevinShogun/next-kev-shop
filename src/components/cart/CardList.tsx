@@ -28,7 +28,7 @@ export const CardList = ({ editable = false, products }: Props) => {
 		updateCartQuantity(p);
 	}
 
-	const productsToShow = products ? products : cart;
+	const productsToShow = products.length > 0 ? products : cart;
 
 	return (
 		<>
@@ -42,7 +42,7 @@ export const CardList = ({ editable = false, products }: Props) => {
 					}}
 				>
 					<Grid item xs={3}>
-						<NextLink href={`product/${p.slug}`} passHref legacyBehavior>
+						<NextLink href={`/product/${p.slug}`} passHref legacyBehavior>
 							<Link>
 								<CardActionArea>
 									<CardMedia

@@ -43,6 +43,7 @@ export const AdminLayout: FC<Props> = ({
                         component={'h1'}
                     >
                         {icon}
+                        {" "}
                         {title}
                     </Typography>
                     <Typography

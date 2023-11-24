@@ -161,7 +161,7 @@ export const SideMenu = () => {
                             </ListItem>
                             <ListItem 
                                 button
-                                onClick={() => { onNavigate('/admin/') }}
+                                onClick={() => { onNavigate('/admin/products') }}
                             >
                                 <ListItemIcon>
                                     <CategoryOutlined />
@@ -170,7 +170,7 @@ export const SideMenu = () => {
                             </ListItem>
                             <ListItem 
                                 button
-                                onClick={() => { onNavigate('/admin/') }}
+                                onClick={() => { onNavigate('/admin/orders') }}
                             >
                                 <ListItemIcon>
                                     <ConfirmationNumberOutlined />
