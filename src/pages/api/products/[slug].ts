@@ -37,6 +37,11 @@ const getOneProduct = async (
 			message: `Ocurrio un error al momento de mandar a traer el objeto con slug: ${slug}`,
 		});
 	}
+	thisProduct.images = thisProduct.images.map((img) => {
+		return img.includes("http")
+			? img
+			: `${process.env.HOST_NAME}products/${img}`;
+	});
 
-	return res.json(thisProduct);
+	return res.status(200).json(thisProduct);
 };

@@ -71,6 +71,14 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
         setValue("tags", getValues('tags').filter( (t) => t !== tag), {shouldValidate: true})
     }
 
+    const onDeleteImage = (img: string) => {
+        setValue(
+            'images',
+            getValues('images').filter( image => image !== img),
+            { shouldValidate: true }
+        );
+    }
+
     useEffect(() => {
         const subscription = watch((value, {name, type}) => {
             if(name==='title'){
@@ -91,16 +99,14 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
         if(!target.files || target.files.length == 0){
             return;
         }
-        console.log(target.files);
-
-        
         try {
             for(const file of target.files){
                 const formData = new FormData();
                 // console.log(file);
                 formData.append('file', file);
                 const { data } = await tesloApi.post<{message: string}>('/admin/upload', formData);
-                console.log(data)
+                console.log(data.message)
+                setValue('images', [...getValues('images'), data.message], {shouldValidate: true})
             }
         } catch (error) {
             console.log(error)
@@ -134,6 +140,8 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
             setIsSaving(false);
         }
     }
+
+
 
     return (
         <AdminLayout
@@ -381,21 +389,26 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
                                 label="Es necesario al menos 2 imágenes"
                                 color='error'
                                 variant='outlined'
+                                sx={{
+                                    display:  getValues('images').length < 2 ? 'flex' : 'none'
+                                }}
                             />
 
                             <Grid container spacing={2}>
                                 {
-                                    product.images.map(img => (
+                                    getValues('images').map(img => (
                                         <Grid item xs={4} sm={3} key={img}>
                                             <Card>
                                                 <CardMedia
                                                     component='img'
                                                     className='fadeIn'
-                                                    image={`/products/${img}`}
+                                                    image={img}
                                                     alt={img}
                                                 />
                                                 <CardActions>
-                                                    <Button fullWidth color="error">
+                                                    <Button fullWidth color="error"
+                                                        onClick={() => onDeleteImage(img)}
+                                                    >
                                                         Borrar
                                                     </Button>
                                                 </CardActions>

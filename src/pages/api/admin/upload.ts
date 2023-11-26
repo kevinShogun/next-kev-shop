@@ -1,7 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import formidable from "formidable"
-import fs from 'fs';
 import { IncomingForm, File } from 'formidable';
+import {v2 as cloudinary} from 'cloudinary';
+cloudinary.config( process.env.CLOUDINARY_URL || '' );
+import fs from 'fs';
+
 
 type Data = { message: string }
 
@@ -24,31 +27,32 @@ export default function handler(req:NextApiRequest, res:NextApiResponse<Data>) {
 
 const uploadImage = async (req:NextApiRequest, res:NextApiResponse<Data>) => {
 
-    await parseFiles(req)
+    const imageUrl = await parseFiles(req)
 
 
-    res.status(200).json({message: 'Imagen subida'})
+    res.status(200).json({message: imageUrl})
 
 }
 
-const saveFile = async (file: formidable.File) => {
+const saveFile = async (file: formidable.File): Promise<string> => {
     
-    const data = fs.readFileSync(file.filepath);
-    fs.writeFileSync(`./public/${file.originalFilename}`, data);
+    // const data = fs.readFileSync(file.filepath);
+    // fs.writeFileSync(`./public/${file.originalFilename}`, data);
+    // fs.unlinkSync(file.filepath);
 
-    fs.unlinkSync(file.filepath);
-
-    return;
+    const { secure_url } = await cloudinary.uploader.upload(file.filepath);
+    
+    return secure_url;
 }
 
 
-const parseFiles = async(req: NextApiRequest): Promise<any> => {
+const parseFiles = async(req: NextApiRequest): Promise<string> => {
  
     return new Promise( (resolve, reject) => {
  
         const form = new IncomingForm() ;
         form.parse( req, async( err, fields, files ) => {
-            console.log({file: files.file});
+            // console.log({file: files.file});
  
             if ( err ) {
                 return reject(err);

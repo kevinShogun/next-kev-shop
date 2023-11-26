@@ -3,6 +3,9 @@ import { database } from "@/database";
 import { IProduct } from "@/interfaces";
 import { Product } from "@/models";
 import { isValidObjectId } from "mongoose";
+import {v2 as cloudinary} from 'cloudinary';
+
+cloudinary.config( process.env.CLOUDINARY_URL || '' );
 
 type Data = 
 	| { message: string } 
@@ -31,9 +34,16 @@ const getProducts = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
 	const products = await Product.find().sort({ title: "desc" }).lean();
 
 	await database.disconnect();
-	// todo: actualizar imagenes
 
-	return res.status(200).json(products);
+	const updatedProducts = products.map( product => {
+		product.images = product.images.map( img => {
+			return img.includes('http') ? img : `${process.env.HOST_NAME}products/${img}`
+		})
+		return product
+	})
+
+
+	return res.status(200).json(updatedProducts);
 };
 
 const updateProduct = async (
@@ -60,6 +70,14 @@ const updateProduct = async (
 		}
 
 		// Todo: de eliminar fotos en cloudinary
+		product.images.forEach( async (img:string) => {
+			if(!images.includes(img)){
+				const [fileId, extension] = img.substring( img.lastIndexOf('/') + 1).split('.');
+				// console.log({img, fileId, extension});
+				await cloudinary.uploader.destroy(fileId);
+			}
+		})
+
 		await product.updateOne(req.body);
 
 		await database.disconnect();
