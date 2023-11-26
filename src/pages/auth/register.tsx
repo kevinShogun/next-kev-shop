@@ -23,7 +23,7 @@ const RegisterPage: NextPage = () => {
 
     const router = useRouter();
 
-    const {registerUser} = useContext(AuthContext);
+    const { registerUser } = useContext(AuthContext);
     const [isError, setIsError] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [destination, setDestination] = useState('/');
@@ -31,16 +31,16 @@ const RegisterPage: NextPage = () => {
 
     useEffect(() => {
         const { error } = router.query;
-        if(error){
+        if (error) {
             setIsError(true);
             setTimeout(() => { setIsError(false); }, 5000);
         }
     }, [router]);
-      
+
 
     const onRegisterUser = async (data: FormData) => {
         const { name, email, password } = data;
-        const { hasError, message  } = await registerUser(name,email,password);
+        const { hasError, message } = await registerUser(name, email, password);
 
         if (hasError) {
             setIsError(true);
@@ -86,17 +86,21 @@ const RegisterPage: NextPage = () => {
                             >
                                 <Typography variant='h1' component='h1'>Cree una cuenta</Typography>
 
-                                <Chip
-                                    label={errorMsg}
-                                    color='error'
-                                    icon={<ErrorOutlineRounded/>}
+                                <Box
+                                    // icon={<ErrorOutlineRounded />}
                                     className='fadeIn'
                                     sx={{
                                         m: 2,
-                                        display: isError ? 'flex' : "none"
+                                        display: isError ? 'flex' : "none",
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        border: "1.5px solid red",
+                                        padding: 2,
+                                        color: 'red'
                                     }}
-                                />
-
+                                >
+                                    Usuario y/o contraseña no son válidos
+                                </Box>
                                 <TextField label='Nombre completo' variant='filled' fullWidth
                                     {...register('name', {
                                         required: 'Este campo es requerido',
@@ -147,7 +151,7 @@ const RegisterPage: NextPage = () => {
                                     fullWidth
                                     className='circular-btn'
                                     size='large'
-                                    type='submit'   
+                                    type='submit'
                                 >
 
                                     Ingresar
@@ -159,7 +163,7 @@ const RegisterPage: NextPage = () => {
                             </Box>
                         </form>
                         <Box>
-                            <Divider sx={{width: "100%", mb: 2, ml: 2}}/>
+                            <Divider sx={{ width: "100%", mb: 2, ml: 2 }} />
 
                         </Box>
                     </Grid>
@@ -217,8 +221,8 @@ export const getServerSideProps: GetServerSideProps = async ({ req, query }) => 
 
     const session = await getSession({ req });
     const { p = '/' } = query;
-    
-    if(session) {
+
+    if (session) {
         return {
             redirect: {
                 destination: p.toString(),
@@ -228,7 +232,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, query }) => 
     }
 
     return {
-        props:{
+        props: {
 
         }
     }

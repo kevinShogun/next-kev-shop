@@ -78,16 +78,21 @@ const Login: NextPage = () => {
                             >
                                 <Typography variant='h1' component='h1'>Iniciar Sesión</Typography>
 
-                                <Chip
-                                    label='Usuario y/o contraseña no son válidos'
-                                    color='error'
-                                    icon={<ErrorOutlineRounded />}
+                                <Box
+                                    // icon={<ErrorOutlineRounded />}
                                     className='fadeIn'
                                     sx={{
                                         m: 2,
-                                        display: isError ? 'flex' : "none"
+                                        display: isError ? 'flex' : "none",
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        border: "1.5px solid red",
+                                        padding: 2,
+                                        color: 'red'
                                     }}
-                                />
+                                >
+                                    Usuario y/o contraseña no son válidos
+                                </Box>
 
                                 <TextField
                                     type='email'
