@@ -28,9 +28,17 @@ export async function middleware(req: NextRequest) {
 	// 		);
 	// 	}
 	// }
+
+	const session: any = await getToken({ req, secret: process.env.NEXTAUTH_SECRET});
 	const requestedPage = req.nextUrl.pathname;
 	const validRoles = ["admin", "super-user", "SEO"];
-	const session: any = await getToken({ req, secret: process.env.NEXTAUTH_SECRET});
+
+	if(req.nextUrl.pathname.startsWith('/login') && session){
+		const url = req.nextUrl.clone();
+		url.pathname = '/'
+		return NextResponse.redirect(url);
+	}
+	
 
 	if(
 		(requestedPage.includes("/api/orders") || requestedPage.includes("/api/admin"))
@@ -63,11 +71,9 @@ export async function middleware(req: NextRequest) {
 		const url = req.nextUrl.clone();
 		url.pathname = `/auth/login`;
 		url.search = `p=${requestedPage}`;
-
+		
 		return NextResponse.redirect(url);
 	}
-
-
 
 
 	return NextResponse.next();
