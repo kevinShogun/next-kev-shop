@@ -29,52 +29,56 @@ export async function middleware(req: NextRequest) {
 	// 	}
 	// }
 
-	const session: any = await getToken({ req, secret: process.env.NEXTAUTH_SECRET});
+	const session: any = await getToken({
+		req,
+		secret: process.env.NEXTAUTH_SECRET,
+	});
 	const requestedPage = req.nextUrl.pathname;
 	const validRoles = ["admin", "super-user", "SEO"];
 
-	if(req.nextUrl.pathname.startsWith('/login') && session){
+	if (req.nextUrl.pathname.startsWith("/auth") && session) {
 		const url = req.nextUrl.clone();
-		url.pathname = '/'
+		url.pathname = `/`;
 		return NextResponse.redirect(url);
 	}
-	
 
-	if(
-		(requestedPage.includes("/api/orders") || requestedPage.includes("/api/admin"))
-		&& !session
-	){
-		return new Response(JSON.stringify({ message: "No autorizado" }), {
-			status: 401,
-			headers: { "Content-Type": "application/json", },
-		});
+	if (!session && !req.nextUrl.pathname.startsWith("/auth")) {
+		const requestedPage = req.nextUrl.pathname;
+		const url = req.nextUrl.clone();
+		url.pathname = `/auth/login`;
+		url.search = `p=${requestedPage}`;
+
+		return NextResponse.redirect(url);
 	}
-	
 
 	if (
-		requestedPage.includes("/api/admin") 
-		&& !validRoles.includes(session.user.role)
+		(requestedPage.includes("/api/orders") ||
+			requestedPage.includes("/api/admin")) &&
+		!session
 	) {
 		return new Response(JSON.stringify({ message: "No autorizado" }), {
 			status: 401,
-			headers: { "Content-Type": "application/json", },
+			headers: { "Content-Type": "application/json" },
+		});
+	}
+
+	if (
+		requestedPage.includes("/api/admin") &&
+		!validRoles.includes(session.user.role)
+	) {
+		return new Response(JSON.stringify({ message: "No autorizado" }), {
+			status: 401,
+			headers: { "Content-Type": "application/json" },
 		});
 	}
 
 	if (!validRoles.includes(session.user.role)) {
 		return NextResponse.redirect(new URL("/", req.url));
 	}
-	
+
 	// console.log(session);
 	if (!session) {
-		const requestedPage = req.nextUrl.pathname;
-		const url = req.nextUrl.clone();
-		url.pathname = `/auth/login`;
-		url.search = `p=${requestedPage}`;
-		
-		return NextResponse.redirect(url);
 	}
-
 
 	return NextResponse.next();
 }
